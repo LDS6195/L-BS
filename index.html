@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#fff8f1" />
+    <meta name="description" content="The Lex Book & Sip Club shop. Shop the club tee and hoodie." />
+    <link rel="icon" type="image/png" href="images/lex-logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="src/styles.css" />
+    <script defer src="src/config.js"></script>
+    <script defer src="src/store.js"></script>
+    <script defer src="src/main.js"></script>
+    <title>Club Shop | Lex Book & Sip Club</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="#/" aria-label="Lex Book and Sip Club home"><img src="images/lex-logo.png" alt="" width="56" height="56" /><span>lex book &<br />sip club</span></a>
+      <nav aria-label="Main navigation"><a href="#/">Shop</a><button id="open-cart" type="button">Cart <span id="cart-count">0</span></button></nav>
+    </header>
+    <main id="main" class="page" tabindex="-1"></main>
+    <footer class="site-footer">
+      <span>lex book & sip club</span>
+      <div class="footer-links">
+        <a class="social-link" href="https://www.instagram.com/lexbookandsipclub/" target="_blank" rel="noopener noreferrer" aria-label="Lex Book & Sip Club on Instagram" title="Instagram: @lexbookandsipclub"><img src="https://cdn.simpleicons.org/instagram/0b3954" alt="Instagram" width="20" height="20" /></a>
+        <a class="social-link" href="https://www.tiktok.com/@lexbookandsipclub" target="_blank" rel="noopener noreferrer" aria-label="Lex Book & Sip Club on TikTok" title="TikTok: @lexbookandsipclub"><img src="https://cdn.simpleicons.org/tiktok/0b3954" alt="TikTok" width="20" height="20" /></a>
+        <a href="#/">Back to the shop &uarr;</a>
+      </div>
+    </footer>
+    <dialog id="cart-dialog" aria-labelledby="cart-title">
+      <div class="cart-heading"><h2 id="cart-title">Your cart</h2><button id="close-cart" class="icon-button" type="button" aria-label="Close cart" title="Close cart">&times;</button></div>
+      <div id="cart-content"></div>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <noscript><p class="page">Please enable JavaScript to view the products and use the cart.</p></noscript>
+  </body>
+</html>

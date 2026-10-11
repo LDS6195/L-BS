@@ -1,0 +1,9 @@
+{
+  "name": "lex-club-shop",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test src/cart.test.js"
+  }
+}
