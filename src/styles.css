@@ -26,7 +26,7 @@ h1 { font-size: 42px; }
 h2 { font-size: 26px; }
 h3 { font-size: 22px; }
 .site-header, .page, .site-footer { width: min(var(--page-width), calc(100% - 48px)); margin-inline: auto; }
-.site-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; min-height: 104px; border-bottom: 1px solid var(--border); }
+.site-header { position: sticky; top: 0; z-index: 5; background: var(--background); display: flex; justify-content: space-between; align-items: center; gap: 24px; min-height: 104px; border-bottom: 1px solid var(--border); }
 .brand { display: flex; align-items: center; gap: 12px; color: var(--accent); font: 700 20px/1.1 var(--font-display); }
 .brand img { object-fit: contain; border-radius: 50%; }
 nav { display: flex; gap: 28px; align-items: center; font-size: 14px; }
