@@ -77,7 +77,7 @@
         <div class="form-field"><label for="customer-email">Email</label><input id="customer-email" name="email" type="email" autocomplete="email" maxlength="254" value="${escapeHtml(customer.email)}" required /></div>
         <div class="form-field"><label for="customer-phone">Phone number</label><input id="customer-phone" name="phone" type="tel" autocomplete="tel" maxlength="30" placeholder="(555) 123-4567" value="${escapeHtml(formatPhone(customer.phone))}" required /></div>
         <button class="button" type="submit" ${window.SHOP_CONFIG.googleSheetsUrl ? '' : 'disabled'}>Submit order</button>
-        <p class="order-note">No payment is collected here. We'll follow up by email.</p><p id="order-status" class="form-status" role="status">${window.SHOP_CONFIG.googleSheetsUrl ? '' : 'Order submission is not connected yet.'}</p></form>`;
+        <p class="order-note">Make sure to send payment via Venmo to complete your order.</p><p id="order-status" class="form-status" role="status">${window.SHOP_CONFIG.googleSheetsUrl ? '' : 'Order submission is not connected yet.'}</p></form>`;
     content.querySelectorAll('[data-remove]').forEach((button) => button.onclick = () => { rememberCustomer(); updateCart({ ...cart[Number(button.dataset.remove)], type: 'remove' }); renderCart(); });
     content.querySelectorAll('[data-product]').forEach((select) => select.onchange = () => {
       rememberCustomer();
