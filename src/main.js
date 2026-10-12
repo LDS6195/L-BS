@@ -34,6 +34,7 @@
       main.innerHTML = `<a class="breadcrumb" href="#/">&larr; Back to the shop</a><div class="product-detail">
         <img class="product-image" src="${product.image}" alt="${product.name}" />
         <section class="product-info"><p class="eyebrow">Lex Book & Sip Club</p><h1>${product.name}</h1><p class="detail-price" id="product-price">${money(unitPrice(product, 'M'))}</p>
+          ${product.id === 'hoodie' ? '<p class="craft-tag"><strong>Embroidered</strong></p>' : ''}
           <p class="description">${product.description}</p><p class="color-info">Color: <strong>${product.color}</strong></p>
           <form id="product-form"><fieldset><legend>Size</legend><div class="sizes">${product.sizes.map((size) => `<label class="size-option"><input type="radio" name="size" value="${size}" aria-label="${size}, ${money(unitPrice(product, size))}" ${size === 'M' ? 'checked' : ''} required /><span>${size}</span></label>`).join('')}</div></fieldset>
             <div class="purchase-row"><div class="quantity-input"><label for="quantity">Quantity</label><input id="quantity" name="quantity" type="number" value="1" min="1" max="20" required /></div><button class="button" type="submit">Add to cart</button></div>
