@@ -1,10 +1,10 @@
 (() => {
   const products = [
-    { id: 'tee', name: 'Hot Girls Read Tee', price: 30, sizePrices: { '2XL': 32 }, image: 'images/t-shirt.png', color: 'White', sizes: ['S', 'M', 'L', 'XL', '2XL'], description: 'A white cropped tee with our red "hot girls read books" print. A little book club energy for your everyday wardrobe.' },
-    { id: 'hoodie', name: 'Club Logo Sweatshirt', price: 40, sizePrices: { '2XL': 46, '3XL': 46 }, image: 'images/hoodie.png', color: 'Red', sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'], description: 'One more chapter, one more cozy layer. Our red pullover hoodie with the Lex Book & Sip Club logo.' },
+    { id: 'tee', archived: true, name: 'Hot Girls Read Tee', price: 30, sizePrices: { '2XL': 32 }, image: 'images/t-shirt.png', color: 'White', sizes: ['S', 'M', 'L', 'XL', '2XL'], description: 'A white cropped tee with our red "hot girls read books" print. A little book club energy for your everyday wardrobe.' },
+    { id: 'hoodie', archived: true, name: 'Club Logo Sweatshirt', price: 40, sizePrices: { '2XL': 46, '3XL': 46 }, image: 'images/hoodie.png', color: 'Red', sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'], description: 'One more chapter, one more cozy layer. Our red pullover hoodie with the Lex Book & Sip Club logo.' },
   ];
   const key = (item) => JSON.stringify([item.id, item.size]);
-  const valid = (item) => products.some((product) => product.id === item?.id && product.sizes.includes(item.size)) && Number.isInteger(item.quantity) && item.quantity >= 1 && item.quantity <= 20;
+  const valid = (item) => products.some((product) => !product.archived && product.id === item?.id && product.sizes.includes(item.size)) && Number.isInteger(item.quantity) && item.quantity >= 1 && item.quantity <= 20;
   function changeCart(cart, action) {
     if (action.type === 'clear') return [];
     if (action.type === 'remove') return cart.filter((item) => key(item) !== key(action));

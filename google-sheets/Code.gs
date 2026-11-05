@@ -1,7 +1,7 @@
 const SPREADSHEET_ID = '15YX0u84Z0YzZTfmONJ8NqET17UVZd9-FliBZrp_5Ov0';
 const CATALOG = {
-  tee: { name: 't-shirt', price: 30, sizePrices: { '2XL': 32 }, sizes: ['S', 'M', 'L', 'XL', '2XL'] },
-  hoodie: { name: 'hoodie', price: 40, sizePrices: { '2XL': 46, '3XL': 46 }, sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] },
+  tee: { archived: true, name: 't-shirt', price: 30, sizePrices: { '2XL': 32 }, sizes: ['S', 'M', 'L', 'XL', '2XL'] },
+  hoodie: { archived: true, name: 'hoodie', price: 40, sizePrices: { '2XL': 46, '3XL': 46 }, sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] },
 };
 const ORDER_HEADERS = ['Order ID', 'Order Date', 'First name', 'Last name', 'Email', 'Phone number', 'Product', 'Size', 'Quantity', 'Unit price', 'Line total', 'Order total', 'Request ID'];
 const SUMMARY_HEADERS = ['Order ID', 'Order Date', 'First name', 'Last name', 'Email', 'Phone number', 'Items', 'Order total'];
@@ -25,6 +25,7 @@ function doPost(event) {
     if (!Array.isArray(order.items) || !order.items.length || order.items.length > maxLines) throw new Error('Invalid items');
     const lines = order.items.map((item) => {
       const product = Object.prototype.hasOwnProperty.call(CATALOG, item?.id) ? CATALOG[item.id] : null;
+      if (product?.archived) throw new Error('These products are no longer available.');
       if (!product || !product.sizes.includes(item.size) || !Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 20) throw new Error('Invalid product');
       return { product, size: item.size, quantity: item.quantity, unitPrice: product.sizePrices?.[item.size] ?? product.price };
     });
@@ -63,7 +64,7 @@ function doPost(event) {
   } catch (error) {
     const message = String(error.message || error);
     console.error('Order submission failed while ' + stage + ': ' + message);
-    const safeMessage = /^(Orders|Order Summary) column \d+ must be "/.test(message) || /^Invalid (request|order reference|first name|last name|email|phone number|items|product)$/.test(message);
+    const safeMessage = message === 'These products are no longer available.' || /^(Orders|Order Summary) column \d+ must be "/.test(message) || /^Invalid (request|order reference|first name|last name|email|phone number|items|product)$/.test(message);
     return reply({ ok: false, error: safeMessage ? message : 'The order service failed while ' + stage + '. Check the latest Apps Script execution log for the exact error.' });
   } finally { if (lock?.hasLock()) lock.releaseLock(); }
 }

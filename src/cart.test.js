@@ -4,7 +4,10 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext, Script } from 'node:vm';
 import './store.js';
 
-const { products, changeCart, restoreCart, total, unitPrice, validateCustomer, formatPhone } = globalThis.LexStore;
+const activeStore = {};
+new Function('globalThis', readFileSync(new URL('./store.js', import.meta.url), 'utf8'))(activeStore);
+for (const product of activeStore.LexStore.products) product.archived = false;
+const { products, changeCart, restoreCart, total, unitPrice, validateCustomer, formatPhone } = activeStore.LexStore;
 const add = { type: 'add', id: 'tee', size: 'M', quantity: 1 };
 
 test('exactly two products; matching sizes merge and different sizes stay separate', () => {
@@ -95,6 +98,7 @@ function sheetsReceiver(initialRows = [], options = {}) {
     SpreadsheetApp: { openById: () => { if (options.failOpen) throw new Error('Permission denied for private spreadsheet'); return { getSheetByName: (name) => sheets[name] }; }, flush() {}, BorderStyle: { SOLID_MEDIUM: 'medium' } },
   };
   runInNewContext(readFileSync(new URL('../google-sheets/Code.gs', import.meta.url), 'utf8'), context);
+  if (!options.archived) runInNewContext('for (const product of Object.values(CATALOG)) product.archived = false;', context);
   return { rows, summary, styles, logs, organize: () => context.organizeOrders(), submit: (order) => context.doPost({ postData: { contents: JSON.stringify(order) } }) };
 }
 
@@ -103,6 +107,63 @@ const order = {
   customer: { firstName: 'Alex', lastName: 'Reader', email: 'alex@example.com', phone: '+1 (555) 123-4567' },
   items: [{ id: 'tee', size: 'M', quantity: 2 }, { id: 'tee', size: 'L', quantity: 1 }, { id: 'hoodie', size: 'XL', quantity: 1 }],
 };
+
+test('archived products remain visible but cannot be added or restored to a cart', () => {
+  const store = globalThis.LexStore;
+  assert.equal(store.products.length, 2);
+  assert.ok(store.products.every((product) => product.archived && product.image && product.description));
+  for (const product of store.products) {
+    const item = { id: product.id, size: 'M', quantity: 1 };
+    assert.deepEqual(store.changeCart([], { ...item, type: 'add' }), []);
+    assert.deepEqual(store.restoreCart(JSON.stringify([item])), []);
+  }
+});
+
+test('archived pages keep product details visible without purchase or checkout controls', () => {
+  const source = readFileSync(new URL('./main.js', import.meta.url), 'utf8');
+  for (const route of ['#/', '#/product/tee', '#/product/hoodie']) {
+    const nodes = new Map();
+    const saved = new Map([['lex-cart', JSON.stringify(order.items)]]);
+    let opened = false;
+    const document = { getElementById: (id) => {
+      if (!nodes.has(id)) nodes.set(id, { innerHTML: '', addEventListener(type, handler) { this[type] = handler; }, showModal() { opened = true; } });
+      return nodes.get(id);
+    } };
+    runInNewContext(source, {
+      LexStore: globalThis.LexStore, document, location: { hash: route },
+      window: { SHOP_CONFIG: { googleSheetsUrl: 'https://example.com/exec' }, addEventListener() {}, scrollTo() {} },
+      localStorage: { getItem: (key) => saved.get(key), setItem: (key, value) => saved.set(key, value) },
+    });
+    const markup = nodes.get('main').innerHTML;
+    assert.ok(markup.includes('No longer available.'));
+    assert.equal(markup.includes('Archived'), false);
+    assert.ok(markup.includes('class="product-image unavailable"'));
+    assert.ok(markup.includes('images/'));
+    assert.equal(markup.includes('Add to cart'), false);
+    assert.equal(markup.includes('Submit order'), false);
+    assert.equal(nodes.get('open-cart').hidden, true);
+    nodes.get('open-cart').onclick();
+    assert.equal(opened, false);
+    assert.equal(saved.get('lex-cart'), '[]');
+    if (route !== '#/') {
+      let prevented = false;
+      nodes.get('product-form').submit({ preventDefault() { prevented = true; } });
+      assert.equal(prevented, true);
+      assert.equal(saved.get('lex-cart'), '[]');
+    }
+  }
+});
+
+test('Sheets rejects archived products without writing orders or summaries', () => {
+  const receiver = sheetsReceiver([], { archived: true });
+  for (const product of products) {
+    const result = receiver.submit({ ...order, items: [{ id: product.id, size: 'M', quantity: 1 }] });
+    assert.equal(result.ok, false);
+    assert.equal(result.error, 'These products are no longer available.');
+  }
+  assert.equal(receiver.rows.length, 0);
+  assert.equal(receiver.summary.length, 0);
+});
 
 test('Sheets records customer contact fields and a row for each product and size', () => {
   const receiver = sheetsReceiver();

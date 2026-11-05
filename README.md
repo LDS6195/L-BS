@@ -6,6 +6,12 @@ Open `index.html` directly in your browser. Upload the same files to any static 
 
 ## Customize
 
+Both products are currently archived. Their photos, descriptions, sizes, and prices remain visible, but purchase controls and the cart are hidden. Archived items are removed from saved carts, and the order receiver rejects purchases without modifying existing orders.
+
+To publish the archive, upload the updated site files and replace the code in Google's Apps Script editor with `google-sheets/Code.gs`. Select **Deploy > Manage deployments > Edit > New version > Deploy**. The live order endpoint is not closed until this deployment is updated. No spreadsheet migration or deletion is needed.
+
+To sell a product again, set its `archived` flag to `false` in both `src/store.js` and the Apps Script `CATALOG`, then publish the site and redeploy Apps Script.
+
 - Colors, fonts, corner radius, and spacing: tokens at the top of `src/styles.css`.
 - Products, prices, and available sizes: `src/store.js`. Tee S-XL costs $30; 2XL costs $32. Hoodie XS-XL costs $40; 2XL and 3XL cost $46. `sizePrices` overrides the base price for specific sizes.
 - Your logo and product photos: `images/`.

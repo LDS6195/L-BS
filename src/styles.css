@@ -42,6 +42,7 @@ nav a:hover, .site-footer a:hover { color: var(--accent); }
 .product-card { min-width: 0; animation: reveal .35s ease both; }
 .product-card:nth-child(2) { animation-delay: .08s; }
 .product-image { display: block; width: 100%; aspect-ratio: 1/1.08; object-fit: contain; background: var(--surface); border-radius: var(--radius); }
+.product-image.unavailable { filter: grayscale(.65); opacity: .75; }
 .image-link { display: block; overflow: hidden; border-radius: var(--radius); }
 .image-link img { transition: transform .25s ease; }
 .image-link:hover img { transform: scale(1.025); }

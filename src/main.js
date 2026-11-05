@@ -32,25 +32,26 @@
     document.title = product ? `${product.name} | Lex Book & Sip Club` : 'Club Shop | Lex Book & Sip Club';
     if (product) {
       main.innerHTML = `<a class="breadcrumb" href="#/">&larr; Back to the shop</a><div class="product-detail">
-        <img class="product-image" src="${product.image}" alt="${product.name}" />
+        <img class="product-image${product.archived ? ' unavailable' : ''}" src="${product.image}" alt="${product.name}" />
         <section class="product-info"><p class="eyebrow">Lex Book & Sip Club</p><h1>${product.name}</h1><p class="detail-price" id="product-price">${money(unitPrice(product, 'M'))}</p>
           <p class="craft-tag"><strong>Embroidered</strong></p>
           <p class="description">${product.description}</p><p class="color-info">Color: <strong>${product.color}</strong></p>
           <form id="product-form"><fieldset><legend>Size</legend><div class="sizes">${product.sizes.map((size) => `<label class="size-option"><input type="radio" name="size" value="${size}" aria-label="${size}, ${money(unitPrice(product, size))}" ${size === 'M' ? 'checked' : ''} required /><span>${size}</span></label>`).join('')}</div></fieldset>
-            <div class="purchase-row"><div class="quantity-input"><label for="quantity">Quantity</label><input id="quantity" name="quantity" type="number" value="1" min="1" max="20" required /></div><button class="button" type="submit">Add to cart</button></div>
+            ${product.archived ? '<p class="product-note">No longer available.</p>' : '<div class="purchase-row"><div class="quantity-input"><label for="quantity">Quantity</label><input id="quantity" name="quantity" type="number" value="1" min="1" max="20" required /></div><button class="button" type="submit">Add to cart</button></div>'}
           </form></section></div>`;
       document.getElementById('product-form').addEventListener('change', (event) => {
         if (event.target.name === 'size') document.getElementById('product-price').textContent = money(unitPrice(product, event.target.value));
       });
       document.getElementById('product-form').addEventListener('submit', (event) => {
         event.preventDefault();
+        if (product.archived) return;
         const fields = new FormData(event.currentTarget);
         updateCart({ type: 'add', id: product.id, size: fields.get('size'), quantity: Number(fields.get('quantity')) });
         notify('Added to your cart');
       });
     } else if (route === '#/' || route === '#') {
       main.innerHTML = `<div class="collection-heading"><p class="eyebrow">Lex Book & Sip Club</p><h1>The club shop<span style="color:var(--accent)">.</span></h1><p class="muted">For your next chapter.</p></div>
-        <div class="product-grid">${products.map((item) => `<article class="product-card"><a class="image-link" href="#/product/${item.id}" aria-label="View ${item.name}"><img class="product-image" src="${item.image}" alt="${item.name}" /></a><div class="product-meta"><h2><a href="#/product/${item.id}">${item.name}</a></h2><p class="price">From ${money(item.price)}</p></div><p class="product-note">${item.color} / ${item.sizes[0]}-${item.sizes.at(-1)}</p><a class="text-link" href="#/product/${item.id}">Shop ${item.id === 'tee' ? 'the tee' : 'the hoodie'} &rarr;</a></article>`).join('')}</div>`;
+        <div class="product-grid">${products.map((item) => `<article class="product-card"><a class="image-link" href="#/product/${item.id}" aria-label="View ${item.name}"><img class="product-image${item.archived ? ' unavailable' : ''}" src="${item.image}" alt="${item.name}" /></a><div class="product-meta"><h2><a href="#/product/${item.id}">${item.name}</a></h2><p class="price">From ${money(item.price)}</p></div><p class="product-note">${item.color} / ${item.sizes[0]}-${item.sizes.at(-1)}</p><a class="text-link" href="#/product/${item.id}">${item.archived ? 'View' : 'Shop'} ${item.id === 'tee' ? 'the tee' : 'the hoodie'} &rarr;</a>${item.archived ? '<p class="product-note">No longer available.</p>' : ''}</article>`).join('')}</div>`;
     } else { main.innerHTML = '<h1>Page not found</h1><a class="text-link" href="#/">Back to the shop</a>'; }
     window.scrollTo(0, 0);
   }
@@ -59,6 +60,10 @@
     if (form) { const fields = new FormData(form); customer = { firstName: fields.get('firstName') || '', lastName: fields.get('lastName') || '', email: fields.get('email') || '', phone: formatPhone(fields.get('phone') || '') }; }
   }
   function renderCart() {
+    if (products.every((product) => product.archived)) {
+      content.innerHTML = '<p class="muted">No longer available.</p>';
+      return;
+    }
     if (!cart.length) {
       content.innerHTML = '<div class="empty-cart"><h3>A new chapter awaits.</h3><p class="muted">Your cart is empty.</p><button class="button" id="continue-shopping" type="button">Back to the shop</button></div>';
       document.getElementById('continue-shopping').onclick = () => { dialog.close(); location.hash = '#/'; };
@@ -120,7 +125,7 @@
   }
   async function submitOrder(event) {
     event.preventDefault();
-    if (submitting || !cart.length || !window.SHOP_CONFIG.googleSheetsUrl) return;
+    if (submitting || !cart.length || cart.some((item) => products.find((product) => product.id === item.id)?.archived) || !window.SHOP_CONFIG.googleSheetsUrl) return;
     rememberCustomer();
     customer = Object.fromEntries(Object.entries(customer).map(([field, value]) => [field, value.trim()]));
     const form = event.currentTarget;
@@ -172,7 +177,8 @@
       content.querySelectorAll('[data-remove], [data-quantity], [data-product], [data-size]').forEach((control) => control.disabled = false);
     } finally { submitting = false; document.getElementById('close-cart').disabled = false; }
   }
-  document.getElementById('open-cart').onclick = () => { if (submitting) return; rememberCustomer(); renderCart(); dialog.showModal(); };
+  document.getElementById('open-cart').hidden = products.every((product) => product.archived);
+  document.getElementById('open-cart').onclick = () => { if (submitting || products.every((product) => product.archived)) return; rememberCustomer(); renderCart(); dialog.showModal(); };
   document.getElementById('close-cart').onclick = () => { rememberCustomer(); dialog.close(); };
   dialog.addEventListener('cancel', (event) => { if (submitting) event.preventDefault(); else rememberCustomer(); });
   window.addEventListener('hashchange', () => { renderPage(); main.focus({ preventScroll: true }); });
